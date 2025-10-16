@@ -227,6 +227,15 @@ class MobileObject {
           }
         })();
         break;
+      
+      case "banshee":
+        (() => {
+          const players = toRoom.players.toArray();
+          
+          if (players.length > 0) {
+            this.performEncounterTasks(players);
+          }
+        })();
       //end cases
     }
     

@@ -276,6 +276,7 @@ class MUDMaze {
             isJoin: undefined,
             isCaptive: true,
             hasEscaped: false,
+            isDisoriented: false,
             debug: false,
           },
           awayMessage: null,
@@ -299,6 +300,7 @@ class MUDMaze {
           },
           timeouts: {
             away: null,
+            disoriented: null,
           },
           history: {
             command: [],
@@ -633,6 +635,14 @@ class MUDMaze {
     let { level, room } = playerData.position;
     let roomObj = this.maze.getRoom({ level, room });
     let toDir, fromDir, invalidDir;
+    
+    if (playerData.flags.isDisoriented) {
+      if (dir in roomObj.exits) {
+        const exits = Object.keys(roomObj.exits);
+        const index = Math.floor(Math.random() * exits.length);
+        dir = exits[index];
+      }
+    }
     
     /* moved to getlongdir.js module
     switch (dir) {

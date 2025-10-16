@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2024 Nicholas D. Horne
+Copyright (C) 2024, 2025 Nicholas D. Horne
 
 This file is part of Radix Discord Bot.
 
@@ -24,6 +24,7 @@ const Rat = require("./mobs/rat.js");
 const Cultist = require("./mobs/cultist.js");
 const GiantSpider = require("./mobs/giantspider.js");
 const Ghost = require("./mobs/ghost.js");
+const Banshee = require("./mobs/banshee.js");
 
 class Maze {
   constructor(mazeData, mud) {
@@ -100,6 +101,15 @@ class Maze {
       ghost.setMoveTimeout(
         ghost.randomMoveDirections,
         ghost.getRandomMoveRandomTimeout()
+      );
+    }
+    
+    if (this.details.mobs.banshee) {
+      const banshee = new Banshee(this);
+      this.insertMobileObject(banshee);
+      banshee.setMoveTimeout(
+        banshee.randomMoveDirections,
+        banshee.getRandomMoveRandomTimeout()
       );
     }
   }
