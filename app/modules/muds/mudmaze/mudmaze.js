@@ -567,7 +567,7 @@ class MUDMaze {
     const playerData = this.players[user.id]
     const fastestTimeIndex = this.indexes.records.time;
     const leastMovesIndex = this.indexes.records.moves;
-    const debug = player.flags.debug;
+    const debug = playerData.flags.debug;
     let newRecord = false;
     
     playerData.flags.hasEscaped = true;
