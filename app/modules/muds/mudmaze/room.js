@@ -270,7 +270,7 @@ class Room {
       );
       
       playerData = this.maze.mud.players[entity.id];
-      playerData.history.room.push(this);
+      //playerData.history.room.push(this);
     } else if (options.entity instanceof MobileObject) {
       entity = options.entity;
     } else {
@@ -448,7 +448,27 @@ class Room {
       }
       
       playerData.flags.isCaptive = false;
-      this.printAdjacentRoomStepSounds(channel);
+      
+      const prevRoom = playerData.history.room.slice(-1)[0];
+      const exclusions = (
+        prevRoom
+        ? (
+          [
+            {
+              level: prevRoom.z,
+              room: prevRoom.index,
+            },
+          ]
+        )
+        : undefined
+      );
+      
+      this.printAdjacentRoomStepSounds(
+        channel,
+        { exclusions }
+      );
+      
+      playerData.history.room.push(this);
       //this.maze.mud.players[entity.id].moves++;
     } else {
       entity.position = { level, room };
@@ -565,8 +585,24 @@ class Room {
     });
   }
   
-  printAdjacentRoomStepSounds(channel) {
-    this.getAdjacentOccupiedRooms().forEach(({ level, room, fromDir }) => {
+  printAdjacentRoomStepSounds(channel, options) {
+    let adjacentOccupiedRooms = this.getAdjacentOccupiedRooms();
+    
+    if (options) {
+      if (options.exclusions) {
+        options.exclusions.forEach(
+          ({ level: excludedLevel, room: excludedRoom }) => {
+            adjacentOccupiedRooms = adjacentOccupiedRooms.filter(
+              ({ level, room }) => {
+                return !(level === excludedLevel && room === excludedRoom);
+              }
+            );
+          }
+        );
+      }
+    }
+    
+    adjacentOccupiedRooms.forEach(({ level, room, fromDir }) => {
       const roomObj = this.maze.getRoom({ level, room });
       
       if (Room.isRoom(roomObj)) {
