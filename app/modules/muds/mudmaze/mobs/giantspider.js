@@ -49,6 +49,7 @@ class GiantSpider extends MobileObject {
       
       let roomObj = this.getCurrentRoom();
       
+      //remove giant spider
       delete roomObj.mobs[this.id];
       delete this.maze.mud.mobs[this.id];
       
@@ -57,12 +58,6 @@ class GiantSpider extends MobileObject {
       let str = this.strings.encounter.player
       
       await print(channel, str);
-      
-      roomObj.exit(null, { entity: playerData});
-      
-      roomObj = this.maze.getRoom(this.maze.details.spawn);
-      
-      roomObj.enter(null, { entity: playerData, stepSound: "a loud thud" });
       
       const players = roomObj.players.toArray().filter(
         (player) => player.id !== playerData.userObj.id
@@ -76,6 +71,13 @@ class GiantSpider extends MobileObject {
         relay(players, str);
       }
       
+      roomObj.exit(null, { entity: playerData});
+      
+      roomObj = this.maze.getRoom(this.maze.details.spawn);
+      
+      roomObj.enter(null, { entity: playerData, stepSound: "a loud thud" });
+      
+      //insert new giant spider
       const giantSpider = new GiantSpider(this.maze);
       
       this.maze.insertMobileObject(giantSpider);
