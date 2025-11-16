@@ -86,6 +86,17 @@ class Maze {
       }
     }
     
+    if (this.details.mobs.banshee) {
+      for (let i = 0; i < this.grid.length; i++) {
+        const banshee = new Banshee(this, i);
+        this.insertMobileObject(banshee);
+        banshee.setMoveTimeout(
+          banshee.randomMoveDirections,
+          banshee.getRandomMoveRandomTimeout()
+        );
+      }
+    }
+    
     if (this.details.mobs.giantSpider) {
       const giantSpider = new GiantSpider(this);
       this.insertMobileObject(giantSpider);
@@ -101,15 +112,6 @@ class Maze {
       ghost.setMoveTimeout(
         ghost.randomMoveDirections,
         ghost.getRandomMoveRandomTimeout()
-      );
-    }
-    
-    if (this.details.mobs.banshee) {
-      const banshee = new Banshee(this);
-      this.insertMobileObject(banshee);
-      banshee.setMoveTimeout(
-        banshee.randomMoveDirections,
-        banshee.getRandomMoveRandomTimeout()
       );
     }
   }
