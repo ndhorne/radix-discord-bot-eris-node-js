@@ -23,6 +23,7 @@ const { readFileSync } = require("fs");
 const MobileObject = require("../mobileobject.js");
 
 const print = require("../../../helpers/print.js");
+const random = require("../../../helpers/random.js");
 const getDMChannel = require("../../../helpers/getdmchannel.js");
 
 const relay = require("../relay.js");
@@ -34,6 +35,7 @@ class Banshee extends MobileObject {
     super(maze, level, room);
     this.kind = "banshee";
     this.stepSound = "wailing";
+    this.randomMoveDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
     this.strings = JSON.parse(
       readFileSync(`${baseDir}/assets/mudmaze/json/strings/banshee.json`)
     );
@@ -47,7 +49,7 @@ class Banshee extends MobileObject {
     relay(players, str);
     
     players.forEach(async (player) => {
-      const disorient = Math.random() < 0.75 ? true : false;
+      const disorient = random() < 0.75 ? true : false;
       const playerData = this.maze.mud.players[player.id];
       const channel = await getDMChannel(playerData.userObj.id);
       
@@ -67,19 +69,41 @@ class Banshee extends MobileObject {
             
             print(channel, str);
           },
-          (60 * 1000) + (Math.floor(Math.random() * (60 + 1)) * 1000)
+          (30 * 1000) + (Math.floor(random() * (30 + 1)) * 1000)
         );
       } else {
         str = this.strings.encounter.player.failText;
       }
       
       print(channel, str);
+      
+      str = this.strings.encounter.player.postEncounterText;
+      
+      print(channel, str);
     });
     
+    //remove banshee
+    const roomObj = this.getCurrentRoom();
+    
+    delete roomObj.mobs[this.id];
+    delete this.maze.mud.mobs[this.id];
+    
+    //insert new banshee
+    const banshee = new Banshee(this.maze, roomObj.z);
+    
+    this.maze.insertMobileObject(banshee);
+    banshee.setMoveTimeout(
+      banshee.randomMoveDirections,
+      banshee.getRandomMoveRandomTimeout()
+    );
+    
+    //previous post encounter behavior
+    /*
     this.setMoveTimeout(
       this.randomMoveDirections,
       0
     );
+    */
   }
   
   onPlayerEnter(playerData) {
