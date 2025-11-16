@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2024 Nicholas D. Horne
+Copyright (C) 2024, 2025 Nicholas D. Horne
 
 This file is part of Radix Discord Bot.
 
@@ -23,6 +23,7 @@ const { readFileSync } = require("fs");
 const MobileObject = require("../mobileobject.js");
 
 const print = require("../../../helpers/print.js");
+const random = require("../../../helpers/random.js");
 const getDMChannel = require("../../../helpers/getdmchannel.js");
 
 const relay = require("../relay.js");
@@ -46,48 +47,86 @@ class Cultist extends MobileObject {
       this.clearMoveTimeout();
       this.encountered = true;
       
-      const {
-        beforeLoseMapText,
-        loseMapText,
-        keepMapText,
-        afterLoseMapText,
-      } = this.strings.encounter.player;
-      
-      const loseMap = Math.random() < 0.5 ? true : false;
-      
-      let str = (
-        beforeLoseMapText
-        + (
-          loseMap
-          ? loseMapText
-          : keepMapText
-        )
-        + afterLoseMapText
-      );
-      
-      if (loseMap) playerData.automap = this.maze.mud.initAutomap();
-      
-      const roomObj = this.getCurrentRoom();
-      
-      delete roomObj.mobs[this.id];
-      delete this.maze.mud.mobs[this.id];
+      let roomObj = this.getCurrentRoom();
+      const players = roomObj.players.toArray();
       
       const channel = await getDMChannel(playerData.userObj.id);
       
-      print(channel, str);
+      const chance = random() * ((players.length > 1) ? .90 : 1);
       
-      const players = roomObj.players.toArray().filter(
-        (player) => player.id !== playerData.userObj.id
-      );
+      let event;
       
-      if (players.length > 0) {
-        const username = playerData.userObj.username;
-        
-        str = this.strings.encounter.bystander.replace("${username}", username);
-        
-        relay(players, str);
+      if (chance < .90) {
+        event = 0;
+      } else {
+        event = 1;
       }
       
+      switch (event) {
+        case 0:
+          const {
+            beforeLoseMapText,
+            loseMapText,
+            keepMapText,
+            afterLoseMapText,
+          } = this.strings.encounter.player;
+          
+          const loseMap = random() < 0.5 ? true : false;
+          
+          let str = (
+            beforeLoseMapText
+            + (
+              loseMap
+              ? loseMapText
+              : keepMapText
+            )
+            + afterLoseMapText
+          );
+          
+          if (loseMap) playerData.automap = this.maze.mud.initAutomap();
+          
+          print(channel, str);
+          
+          const players = roomObj.players.toArray().filter(
+            (player) => player.id !== playerData.userObj.id
+          );
+          
+          if (players.length > 0) {
+            const username = playerData.userObj.username;
+            
+            str = this.strings.encounter.bystander.replace(
+              "${username}", username
+            );
+            
+            relay(players, str);
+          }
+          break;
+        //end case 0
+        
+        case 1:
+          const { returnToSpawnText } = this.strings.encounter.player;
+          
+          print(channel, returnToSpawnText);
+          
+          playerData.flags.isCaptive = true;
+          
+          roomObj.exit(null, { entity: playerData});
+          roomObj = this.maze.getRoom(this.maze.details.spawn);
+          roomObj.enter(null, { entity: playerData, stepSound: "a loud thud" });
+          
+          break;
+        //end case 1
+        
+        default:
+          throw new Error("Invalid cultist encounter event");
+        //end cases
+      }
+      
+      //remove cultist
+      delete roomObj.mobs[this.id];
+      delete this.maze.mud.mobs[this.id];
+      
+      //insert new cultist
       const cultist = new Cultist(this.maze, roomObj.z);
       
       this.maze.insertMobileObject(cultist);
