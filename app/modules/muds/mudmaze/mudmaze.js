@@ -574,6 +574,13 @@ class MUDMaze {
     
     this.logoutPlayer(msg);
     
+    if (playerData.flags.isDisoriented) {
+      clearTimeout(playerData.timeouts.disoriented);
+      
+      playerData.flags.isDisoriented = false;
+      playerData.timeouts.disoriented = null;
+    }
+    
     if (!debug) this.updateStats(msg);
     
     if (
@@ -1206,7 +1213,10 @@ class MUDMaze {
             + "listen         : Listen to surroundings\n"
             + (
               admins.includes(user.id)
-              ? "teleport       : Teleport to a room"
+              ? (
+                "teleport       : Teleport to a room\n"
+                + "query          : Query various game details"
+              )
               : ""
             )
             + "```"
