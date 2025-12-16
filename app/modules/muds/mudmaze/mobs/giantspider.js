@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2024 Nicholas D. Horne
+Copyright (C) 2024, 2025 Nicholas D. Horne
 
 This file is part of Radix Discord Bot.
 
@@ -49,10 +49,6 @@ class GiantSpider extends MobileObject {
       
       let roomObj = this.getCurrentRoom();
       
-      //remove giant spider
-      delete roomObj.mobs[this.id];
-      delete this.maze.mud.mobs[this.id];
-      
       const channel = await getDMChannel(playerData.userObj.id);
       
       let str = this.strings.encounter.player
@@ -70,6 +66,10 @@ class GiantSpider extends MobileObject {
         
         relay(players, str);
       }
+      
+      //remove giant spider
+      delete roomObj.mobs[this.id];
+      delete this.maze.mud.mobs[this.id];
       
       roomObj.exit(null, { entity: playerData});
       
