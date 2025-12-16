@@ -57,10 +57,14 @@ class Cultist extends MobileObject {
       let event;
       
       if (chance < .90) {
-        event = 0;
+        event = 0; //lose map
       } else {
-        event = 1;
+        event = 1; //return to spawn
       }
+      
+      //remove cultist
+      delete roomObj.mobs[this.id];
+      delete this.maze.mud.mobs[this.id];
       
       switch (event) {
         case 0:
@@ -121,10 +125,6 @@ class Cultist extends MobileObject {
           throw new Error("Invalid cultist encounter event");
         //end cases
       }
-      
-      //remove cultist
-      delete roomObj.mobs[this.id];
-      delete this.maze.mud.mobs[this.id];
       
       //insert new cultist
       const cultist = new Cultist(this.maze, roomObj.z);
